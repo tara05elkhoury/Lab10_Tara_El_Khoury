@@ -25,15 +25,32 @@ pipeline {
             }
         }
 
+        stage('Coverage') {
+            steps {
+                bat 'venv\\Scripts\\python.exe -m coverage run --source=app -m pytest'
+                bat 'venv\\Scripts\\python.exe -m coverage report -m'
+                bat 'venv\\Scripts\\python.exe -m coverage xml'
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                bat 'venv\\Scripts\\python.exe -m bandit app.py deploy.py -f txt -o bandit-report.txt'
+                bat 'type bandit-report.txt'
+            }
+        }
+
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
+                bat 'venv\\Scripts\\python.exe deploy.py'
             }
         }
     }
 
     post {
         always {
+            archiveArtifacts artifacts: 'coverage.xml, bandit-report.txt',
+                             allowEmptyArchive: true
             cleanWs()
         }
     }
