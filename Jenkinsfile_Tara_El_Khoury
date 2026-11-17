@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    environment {
+        VIRTUAL_ENV = 'venv'
+    }
+
+    stages {
+        stage('Setup') {
+            steps {
+                bat 'python -m venv venv'
+                bat 'venv\\Scripts\\python.exe -m pip install -r requirements.txt'
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                bat 'venv\\Scripts\\python.exe -m flake8 app.py'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'venv\\Scripts\\python.exe -m pytest'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying application...'
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
